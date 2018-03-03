@@ -11,8 +11,9 @@
 
 #include "types.h"
 
+#include "chunk.h"
+#include "levels.h"
 #include "message.h"
-#include "movement.h"
 
 #define ENTITY_ID(a) (a)
 #define ENTITY_CTOR(a) (a)      // Function for creating entity
@@ -40,17 +41,35 @@
     (TODO?: state-change only if weight exceeds threshold )
 */
 
+// Entity Related Types
+
+typedef struct entity entity_t;
+typedef struct state state_t;
+typedef struct movtype movtype_t;
+
+// ent_ctor_t - constructor for some entity
+// If parameter is not NULL, used for new entity
+// Allocated with malloc() otherwise
+// typedef void* (*malloc_t) (size_t);
+typedef entity_t* (*ent_ctor_t)( entity_t*, level_t*, vec2_t );
+
+
+// Entity Masks Types
+
+typedef struct emask_predicate emask_predicate_t;
+typedef struct emask emask_t;
+
 
 // state_t
-struct struct_state {
+struct state {
 
-    int (* receive )(state_t*, message_t*);    // Receives messages and updates state weights
-                                     // NULL for simple mobs
+    int (* receive )(state_t*, message_t*); // Receives messages and updates state weights
+                                            // NULL for simple mobs
 
-    int (* update )(entity_t*);      // State logic
+    int (* update )(entity_t*);             // State logic
 
-    void* data;                      // Extra data for states (i.e. buffer)
-                                     // TODO? Managed by state itself 
+    void* data;                             // Extra data for states (i.e. buffer)
+                                            // TODO? Managed by state itself 
 
     // int state_num;
     // uint16_t weights[/*state_num*/];
@@ -81,18 +100,19 @@ enum entity_type {
 enum entity_traits {
     TRAIT_NONE = 0,
 
-    TRAIT_CONSCIOUS = 0x0001,
-    TRAIT_BLIND     = 0x0002,
-    // TRAIT_USESMAGIC = 0x0004
+    TRAIT_CONSCIOUS   = 0x0001,
+    TRAIT_BLIND       = 0x0002,
+    TRAIT_INCORPOREAL = 0x0004, // can be walked through
+    
+    // TRAIT_USESMAGIC
 };
 
 
 // entity_t
-struct struct_entity {
+struct entity {
 
-    coord_t coord;
-    // pos_t x;
-    // pos_t y;
+    vec2_t pos;
+    level_t* level;
 
     // uint16_t entid;                // Entity ID, i.e. 
     uint16_t type;                 // TODO: do we need this?
@@ -111,31 +131,32 @@ struct struct_entity {
                                    // Capacity depends from entity params (e.g. state_mem_capacity (TODO) )
 
 
-    // Movement
-    // TODO: REDO TO struct 
     movtype_t* movtype;
-    // int (* move )(coord_t*); 
-    
 
-    // (coordinates_t or entity_t?) target
+    entloc_t entloc;
 
-
-
-
+    // fighttype_t* fighttype;
 
 };
 
 // Movement type
 // search: Steering Behaviour
-struct struct_movtype {
+struct movtype {
 
-    coord_t target;
+    vec2_t target;
+
     union {
         struct {
             len_t radius;
             uint8_t direction;
         } sq;
     } u;
+
+    len_t radius;
+    uint8_t direction;
+
+    vec2_t** targets;
+
     int (* mov )(entity_t*); 
 
     // void* data;
@@ -143,6 +164,63 @@ struct struct_movtype {
 };
 
 
+// ENTITY MASKS: Select entities that satisfy masks
+
+#define NO_EMASK NULL
+#define NO_PREDICATE NULL
+
+struct emask_predicate {
+
+    /* TODO */
+
+    emask_predicate_t* next;
+};
+
+enum emask_type {
+    MASK_NONE     = 0,
+    // MASK_PERSONAL = 1,
+};
+
+struct emask {
+    // Mask type
+    uint16_t type;
+
+    // Traits that entity must have
+    uint16_t traits;
+
+    emask_predicate_t* predicate;
+};
+
+int dummy_state_update( state_t* s );
+int dummy_state_receive( state_t* s, message_t* m);
+
+enum update_code {
+    C_ENT_MOVED   = 0x0001,
+    C_ENT_DAMAGED = 0x0002,
+
+    // C_ENT_DIED = 
+};
+
+/*
+    Call this in the end of entity initialization
+*/
+int npc_create( entity_t* );
+
+/*
+    Make a turn in this tick
+*/
 int entity_update( entity_t* );
+
+/*
+    chunk-related functions
+    Call them whenever entity is repositioned
+*/
+int entity_place( entity_t* );
+int entity_move( entity_t*, vec2_t );
+entid_t npcat(const level_t* lvl, vec2_t pos, const emask_t* mask);
+entid_t playerat(const level_t* lvl, vec2_t pos, const emask_t* mask);
+
+// Find entity at given position, be it NPC or Player
+entid_t entityat(level_t* lvl, vec2_t pos, emask_t mask);
 
 #endif /* _ENTITY_H_ */

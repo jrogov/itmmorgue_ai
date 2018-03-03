@@ -1,6 +1,7 @@
 #ifndef _MOVEMENT_H_
 #define _MOVEMENT_H_
 
+#include "types.h"
 #include "entity.h"
 
 enum direction {
@@ -17,14 +18,13 @@ enum direction {
 /* Simple movement to coordinate*/
 // int moveto( entity_t* e );
 
-/* Clockwise*/
-// int patrol_square( entity_t* e, coord_t target );
 
 /* Clockwise */
 /* 
     target - upper-left corner of square
     u.radius - square side's length
 */
+
 int walk_around_square( entity_t* e );
 
 #endif /* _MOVEMENT_H_ */

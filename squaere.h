@@ -1,9 +1,9 @@
+
 #ifndef _SQUAERE_H_
 #define _SQUAERE_H_
 
-entity_t* squaere_create( void* (* malloc_f )(size_t) );
+#include "entity.h"
 
-#define SQUAERE_ID ENTITY_ID( 1 )
-#define SQUAERE_CTOR ENTITY_CTOR(squaere_create)
+entity_t* squaere_create( entity_t* ent, level_t* lvl, vec2_t pos );
 
 #endif /* _SQUAERE_H_ */

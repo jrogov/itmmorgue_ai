@@ -1,9 +1,9 @@
 #ifndef _MESSAGE_H_
 #define _MESSAGE_H_
 
-#include "event.h"
+// #include "event.h"
 
-typedef struct struct_message message_t;
+typedef struct message message_t;
 
 enum message_type {
     MSG_PERSONAL = 1,  // Message for specific entity
@@ -25,7 +25,9 @@ enum message_type {
 
 };
 
-struct struct_message {
+struct message {
+
+    entid_t id;
 
     short message_type;
 
@@ -40,5 +42,10 @@ struct struct_message {
     void* extra;
     
 };
+
+// TODO?: msg - Not pointer?
+int message_send( message_t* msg );
+
+// pqueue_t delayed;
 
 #endif /* _MESSAGE_H_ */
