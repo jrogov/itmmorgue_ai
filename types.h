@@ -22,20 +22,22 @@ struct coordinates {
     pos_t x;
 };
 
-#define VEC2(a,b) ((vec2_t) { .y=(a), .x=(b) }) 
+#define SVEC2(a,b) { .y=(a), .x=(b) }
+#define VEC2(a,b) (vec2_t) { .y=(a), .x=(b) } 
 
 // 2D VECTOR OPERATIONS
+#define VEC2_MDIST(a,b)      ( ((a).x+(a).y) - ((b).x+(b).y) )
+#define VEC2_SQDIST(a,b)  ( ((a).x-(b).x) * (((a).x-(b).x)) + (((a).y-(b).y) * ((a).y-(b).y))  )
 #define VEC2_CMP(a,b)   (! ( ((a).x - (b).y) | ((a).y - (b).y)) )
-#define VEC2_DOT(a,b)       VEC2( (a).y*(b).y, (a).x*(b).x )  
-#define VEC2_CROSS(a,b)       VEC2( (a).y*(b).x, (a).x*(b).y )
+#define VEC2_DOT(a,b)   ( (a).y*(b).y + (a).x*(b).x )  
+
+#define VEC2_CROSS(a,b)     VEC2( (a).y*(b).x, (a).x*(b).y )
 #define VEC2_SUM(a,b)       VEC2( (a).y+(b).y, (a).x+(b).x )  
 #define VEC2_SUB(a,b)       VEC2( (a).y-(b).y, (a).x-(b).x )  
 
-
 // Vector - Vector (inplace)
-#define VEC2_DUP(dest, src) { (dest).x = (src).x; (dest).y = (src).y; }
 #define VEC2_IDOT(a,b)       { (a).x*=(b).x; (a).y*=(b).y }
-#define VEC2_ICROSS(a,b)       { (a).x*=(b).y; (a).y*=(b).x }
+#define VEC2_ICROSS(a,b)     { (a).x*=(b).y; (a).y*=(b).x }
 #define VEC2_ISUM(a,b)       { (a).x+=(b).x; (a).y+=(b).y }
 #define VEC2_ISUB(a,b)       { (a).x-=(b).x; (a).y-=(b).y }
 
@@ -46,5 +48,8 @@ struct coordinates {
 
 // Vector 
 #define VEC2_SQLEN(a) ( (a).x*(a).x + (a).y*(a).y )
+
+// Point inside area
+#define VEC2_INSIDE_RECT(p, ul, lr) ( (ul).y<=(p).y && (ul).x<=(p).x && (p).y <=(lr).y && (p).x<=(lr).x )
 
 #endif /* _TYPES_H_ */
