@@ -57,12 +57,12 @@ int npc_create(entity_t* e){
 
 // TODO: return multiple entities
 
-entid_t npcat(const level_t* lvl, vec2_t pos, const emask_t* mask){
+entid_t npc_at(const level_t* lvl, vec2_t pos, const emask_t* mask){
 
     const chunkroot_t* cr = &(lvl->chunkroot);
     chunk_t* chunks = cr->chunks;
 
-    entloc_t* el = &(chunks[chunk_index(cr, pos)].entloc);
+    entlist_t* el = &(chunks[chunk_index(cr, pos)].entlist);
 
     /* TODO: check mask */
     (void) mask;
@@ -78,7 +78,7 @@ entid_t npcat(const level_t* lvl, vec2_t pos, const emask_t* mask){
     return -1;
 }
 
-entid_t playerat(const level_t* lvl, vec2_t pos, const emask_t* mask){
+entid_t player_at(const level_t* lvl, vec2_t pos, const emask_t* mask){
     // TODO
     (void) lvl;
     (void) pos;
@@ -86,39 +86,24 @@ entid_t playerat(const level_t* lvl, vec2_t pos, const emask_t* mask){
     return 0;
 }
 
-entid_t entityat(level_t* lvl, vec2_t pos, emask_t mask){
+entid_t entity_at(level_t* lvl, vec2_t pos, emask_t mask){
+    // TODO
     (void) lvl;
     (void) pos;
     (void) mask;
     return 0;
 }
 
-
-// entity_t* playerat(vec2_t pos, emask_t mask);
-
-// Find entity at given position, be it NPC or Player
-// entity_t* chunk(vec2_t pos, emask_t mask);
-
-
 int entity_place(entity_t* e){
 
     chunkroot_t* cr = &(e->level->chunkroot);
     chunk_t* c = &(cr->chunks[chunk_index(cr, e->pos)]);
 
-    // DEBUG_MPRINTF(0,0,"@%d | %dx%d | %d\n",e->entloc.id, e->pos.y, e->pos.x, chunk_index(cr, e->pos));
-    // wgetch(DEBUG_WINDOW);
-
-    // e->entloc.next = c->entloc;
-    // e->entloc.prev = (entloc_t*) c; // UNSAFE AF
-    // c->entloc = &(e->entloc);
-
-
-
-    if( NULL != c->entloc.next )
-        c->entloc.next->prev = &(e->entloc); 
-    e->entloc.next = c->entloc.next;
-    e->entloc.prev = &(c->entloc);
-    c->entloc.next = &(e->entloc);
+    if( NULL != c->entlist.next )
+        c->entlist.next->prev = &(e->entlist); 
+    e->entlist.next = c->entlist.next;
+    e->entlist.prev = &(c->entlist);
+    c->entlist.next = &(e->entlist);
 
     return 0;
 }
@@ -136,7 +121,7 @@ int entity_move(entity_t* e, vec2_t newpos){
     if( chunk_are_neighbours(cr, pos, newpos) )
         return 0;
     
-    entloc_t* el = &(e->entloc);
+    entlist_t* el = &(e->entlist);
     el->prev->next = el->next;
     if( NULL != el->next )
         el->next->prev = el->prev;

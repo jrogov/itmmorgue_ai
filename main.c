@@ -51,7 +51,7 @@ int __debug_print_entity(int16_t y, int16_t x, entity_t* e){
         "Coordinates: %hu : %hu\n"
         "Chunk index: %d\n\n"
         ,
-        e->entloc.id,
+        e->entlist.id,
         e->type,
         e->traits,
         e->pos.y, e->pos.x
@@ -66,7 +66,7 @@ int __debug_print_chunk(int16_t y, int16_t x, level_t* lvl, int index){
         wmove(DEBUG_WINDOW, y, x);
 
     DEBUG_PRINTF("%03d | ", index);
-    entloc_t* e = lvl->chunkroot.chunks[index].entloc.next;
+    entlist_t* e = lvl->chunkroot.chunks[index].entlist.next;
     while( NULL != e ){
         DEBUG_PRINTF("%d -> ", e->id);
         e = e->next;

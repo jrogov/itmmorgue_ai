@@ -15,7 +15,7 @@
         S(ize) - length of chunk's side
     |
     |
-    Double-Linked List of NPCs: (entity_t.entloc)
+    Double-Linked List of NPCs: (entity_t.entlist)
         List of NPCs at specific chunk
         ! Each NPC has it's own reusable DLL element initialized at start
 
@@ -79,7 +79,7 @@
 
 typedef struct chunkroot chunkroot_t;
 typedef struct chunk chunk_t;
-typedef struct entloc entloc_t;
+typedef struct entlist entlist_t;
 
 
 // Special values for init.chunks_[xy]
@@ -110,21 +110,47 @@ struct chunkroot {
 };
 
 
-struct entloc {
-    // next MUST be first: used in dirty trick with (entloc_t) struct chunk
-    entloc_t* next;
-    entloc_t* prev;
+struct entlist {
+    // next MUST be first: used in dirty trick with (entlist_t) struct chunk
+    entlist_t* next;
+    entlist_t* prev;
 
     entid_t id;
 };
 
 
-#define ISEMPTY_CHUNK(a) ( NULL == (a.entloc) )
+typedef struct area area_t;
+
+enum area_type {
+    A_RECT = 0,
+    // A_MCIRCLE    // aka Manhattan Circle aka taxicab circle aka T-circle: 
+    // A_CIRCLE,
+    // A_
+};
+
+struct area {
+
+    uint16_t type;      // area type enum area_type
+
+    union {
+        struct {
+            vec2_t ul;  // Upper-left corner
+            vec2_t lr;  // Lower right corner
+        } rect;
+    } u;
+
+    // TODO? Multi-shape areas
+    // area_t* next;
+};
+
+
+#define ISEMPTY_CHUNK(a) ( NULL == (a.entlist) )
+
 
 struct chunk {
-    // TODO? change to entloc?
-    // entloc_t* entloc;
-    entloc_t entloc;
+    // TODO? change to entlist_t*?
+    // entlist_t* entlist;
+    entlist_t entlist;
 };
 
 int chunk_init_levels(int level_num, ...);
@@ -132,11 +158,10 @@ int chunk_init_levels(int level_num, ...);
 int chunk_index(const chunkroot_t* cr, vec2_t pos);
 int chunk_are_neighbours(const chunkroot_t* cr, vec2_t a, vec2_t b);
 
-
 /*
 {
-    playerat()
-    npcat()
+    player_at()
+    npc_at()
 }
 */
 

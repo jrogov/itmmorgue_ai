@@ -133,7 +133,8 @@ struct entity {
 
     movtype_t* movtype;
 
-    entloc_t entloc;
+    // entlist.id
+    entlist_t entlist;
 
     // fighttype_t* fighttype;
 
@@ -201,26 +202,31 @@ enum update_code {
     // C_ENT_DIED = 
 };
 
-/*
-    Call this in the end of entity initialization
-*/
-int npc_create( entity_t* );
+// "Getters" that has complex calculation
+pos_t get_speed(entity_t* e);
 
-/*
-    Make a turn in this tick
-*/
+// Dummy state functions: does nothing;
+int dummy_state_update( state_t* s );
+int dummy_state_receive( state_t* s, message_t* m);
+
+int npc_create( entity_t* );
 int entity_update( entity_t* );
 
-/*
-    chunk-related functions
-    Call them whenever entity is repositioned
-*/
+
+// Chunk-related functions
+
+// Place entity (in chunk)  
 int entity_place( entity_t* );
+// To reposition entity (correctly for chunks)
 int entity_move( entity_t*, vec2_t );
-entid_t npcat(const level_t* lvl, vec2_t pos, const emask_t* mask);
-entid_t playerat(const level_t* lvl, vec2_t pos, const emask_t* mask);
+
 
 // Find entity at given position, be it NPC or Player
-entid_t entityat(level_t* lvl, vec2_t pos, emask_t mask);
+entid_t entity_at(level_t* lvl, vec2_t pos, emask_t mask);
 
-#endif /* _ENTITY_H_ */
+// Find NPC at given position 
+entid_t npc_at(const level_t* lvl, vec2_t pos, const emask_t* mask);
+// Find player at given position
+entid_t player_at(const level_t* lvl, vec2_t pos, const emask_t* mask);
+
+#endif /* _ENTITY_H_  */

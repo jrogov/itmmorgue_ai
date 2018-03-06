@@ -7,8 +7,9 @@
 
 enum ENTITY_ID {
     ENT_DUMMY = 0,
-    ENT_SQUAERE = 1,
-    // ENT_GUARD
+    ENT_SQUAERE,
+    ENT_GUARD 
+
 };
 
 ent_ctor_t ctor[] = {
