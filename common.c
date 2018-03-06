@@ -27,3 +27,12 @@ int log2c( unsigned int n ){
 
     return ( n <= 1 )? 0 : (sizeof(typeof(n))<<3) - __builtin_clz(n-1);
 }
+
+#ifdef DEBUG
+
+WINDOW* DEBUG_WINDOW;
+int DEBUG_STARTPOS_Y;
+int DEBUG_STARTPOS_X;
+void null_varargs(int i, ...){(void) i;}
+
+#endif

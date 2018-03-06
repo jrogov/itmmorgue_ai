@@ -38,9 +38,10 @@ size_t lvltilepos(level_t* lvl, uint16_t y, uint16_t x) {
     return y * lvl->max_x + x;
 }
 
+#ifdef DEBUG
 int __debug_print_entity(int16_t y, int16_t x, entity_t* e){
 
-    if( y > 0 || x > 0 )
+    if( y > 0 && x > 0 )
         wmove(DEBUG_WINDOW, y, x);
 
     DEBUG_PRINTF(
@@ -61,7 +62,7 @@ int __debug_print_entity(int16_t y, int16_t x, entity_t* e){
 
 int __debug_print_chunk(int16_t y, int16_t x, level_t* lvl, int index){
 
-    if( y > 0 || x > 0 )
+    if( y > 0 && x > 0 )
         wmove(DEBUG_WINDOW, y, x);
 
     DEBUG_PRINTF("%03d | ", index);
@@ -76,6 +77,10 @@ int __debug_print_chunk(int16_t y, int16_t x, level_t* lvl, int index){
     return 0;
 
 }
+#else
+int __debug_print_entity(int16_t y, int16_t x, entity_t* e){ (void)y; (void)x; (void)e; return 0; }
+int __debug_print_chunk(int16_t y, int16_t x, level_t* lvl, int index){ (void)y; (void)x; (void)lvl; (void)index; return 0; }
+#endif
 
 level_t* gen_simple_plane(vec2_t size, char* name){
 
@@ -138,7 +143,15 @@ int main(){
     }   
 
     map = newwin( winsize.y, winsize.x, 0, 0 );
-    DEBUG_WINDOW = newwin(100, 50, 0, 52);
+    DEBUG_INIT(100, 50, 0, 52);
+    cbreak();
+    noecho();
+    start_color();
+    // raw();
+    set_escdelay(0);
+    // keypad(map, TRUE);
+    curs_set(0);
+    
 
 
     level_t* lvl = gen_simple_plane(VEC2(ylen, xlen), "Foo");
@@ -180,8 +193,8 @@ int main(){
     }
 
     wrefresh(map);
-
-    DEBUG_MPRINTF(1,0,
+    
+    DEBUG_MPRINTF(2,0,
             "Ceiled Log of Y Chunk Size: %d\n"
             "Ceiled Log of X Chunk Size: %d\n"
             "X Chunks Num: %d\n",
@@ -189,22 +202,29 @@ int main(){
             lvl->chunkroot.u.calc.x_offset,
             lvl->chunkroot.u.calc.x_cnum
         );
+    DEBUG_PRINT("\n  Y   X | EntID\n");
+    DEBUG_FIXPOS();
 
     for(;;){
 
+        //------------------------------------------------------------------------------
+        //  DEBUG INFO
+        //------------------------------------------------------------------------------
+
+        DEBUG_RESET();
 
         for( int i = 0; i<entities_num; ++i)
         {
             vec2_t v = startpos;
             v = VEC2_SUM(v, VEC2(i,i));
-            entid_t id = npcat(lvl, v, NO_EMASK);
-            DEBUG_MPRINTF(5+i,0,
-                "%3d %3d | %d\n", 
+            entid_t id = npc_at(lvl, v, NO_EMASK);
+            DEBUG_PRINTF("%3d %3d | %3d\n", 
                 v.y, v.x,  id
                 );
         }
+        DEBUG_PRINT("\n");
 
-        wmove(DEBUG_WINDOW, 5,0);
+        // wmove(DEBUG_WINDOW, 5,0);
         for( int i = 0; i<ent_count; ++i)
             __debug_print_entity(-1,-1,entities[i]);
 
@@ -213,9 +233,15 @@ int main(){
         for( size_t i =0; i<ARRAY_LEN(chunk_idxs); ++i)
         __debug_print_chunk(-1,-1,lvl,chunk_idxs[i]);
 
+        DEBUG_REFRESH();
 
-        if( wgetch(DEBUG_WINDOW) == '\n' )
+        //------------------------------------------------------------------------------
+        
+
+        #define CASE_INS(a) ((a) & ~0x0020)
+        if( CASE_INS(wgetch(map)) == 'Q'  )
             break;
+        #undef CASE_INS
 
 
         for( int i=0; i<ent_count; ++i){
