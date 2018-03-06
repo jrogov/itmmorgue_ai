@@ -2,7 +2,7 @@
 #define _ENTITY_LIST_H_
 
 #include "squaere.h"
-// #include "guard.h"
+#include "guard.h"
 
 
 enum ENTITY_ID {
@@ -12,11 +12,13 @@ enum ENTITY_ID {
 
 };
 
+#define ENTITY_CREATE(name, ent, lvl, pos) ctor[ENT_##name]((ent), (lvl), (pos));
+
 ent_ctor_t ctor[] = {
     // dummy_create,
     NULL,
     squaere_create,
-    // guard_create
+    guard_create
 }; 
 
 #endif /* _ENTITY_LIST_H_ */

@@ -10,7 +10,6 @@
 #include <stdint.h>
 
 #include "types.h"
-
 #include "chunk.h"
 #include "levels.h"
 #include "message.h"
@@ -18,6 +17,16 @@
 #define ENTITY_ID(a) (a)
 #define ENTITY_CTOR(a) (a)      // Function for creating entity
                                 // entity_t* ctor( void* (* malloc_f )(size_t) 
+
+// TODO switch state macro
+#define SWITCH(e,name) e->state = 
+
+#define GLOBAL_STATE    ENTNAME##_global_state
+#define STATE(name)     ENTNAME##name##_state_update
+
+#define GLOBAL_STATE_DEF    int GLOBAL_STATE( entity_t* e )
+#define STATE_DEF(name)     int STATE(name)( entity_t* e )
+
 
 #define MAX_WEIGHT UINT16_MAX
 
@@ -62,6 +71,8 @@ typedef struct emask emask_t;
 
 // state_t
 struct state {
+
+    int s;                                  // Current substate in FSM: defined in entity module
 
     int (* receive )(state_t*, message_t*); // Receives messages and updates state weights
                                             // NULL for simple mobs
@@ -109,17 +120,20 @@ enum entity_traits {
 
 
 // entity_t
+#define EID entlist.id
 struct entity {
 
     vec2_t pos;
     level_t* level;
 
-    // uint16_t entid;                // Entity ID, i.e. 
     uint16_t type;                 // TODO: do we need this?
     // TODO: Increase size?
     uint16_t traits;
 
-    // level_t* level;                // Level on which entity currently located
+    struct {
+        uint8_t base;
+        uint8_t chance;           // 
+    } speed;
 
     state_t* gstate;               // Global state - defines state management and basic behaviour
     state_t* state;                // Current state - defines current task (patrol, pursue, attack, etc.)
@@ -133,7 +147,6 @@ struct entity {
 
     movtype_t* movtype;
 
-    // entlist.id
     entlist_t entlist;
 
     // fighttype_t* fighttype;
@@ -153,14 +166,9 @@ struct movtype {
         } sq;
     } u;
 
-    len_t radius;
-    uint8_t direction;
-
-    vec2_t** targets;
-
+    // vec2_t** targets;
     int (* mov )(entity_t*); 
-
-    // void* data;
+    void* data;
 
 };
 
@@ -183,17 +191,17 @@ enum emask_type {
 };
 
 struct emask {
-    // Mask type
-    uint16_t type;
-
-    // Traits that entity must have
-    uint16_t traits;
-
-    emask_predicate_t* predicate;
+    uint16_t type;                // Mask type                   
+    uint16_t traits;              // Traits that entity must have
+                                                           
+    emask_predicate_t* predicate; // Complex masks     
 };
 
-int dummy_state_update( state_t* s );
-int dummy_state_receive( state_t* s, message_t* m);
+
+
+//------------------------------------------------------------------------------
+//    FUNCTIONS
+//------------------------------------------------------------------------------
 
 enum update_code {
     C_ENT_MOVED   = 0x0001,
@@ -203,10 +211,11 @@ enum update_code {
 };
 
 // "Getters" that has complex calculation
+entity_t* get_entity(entid_t id);
 pos_t get_speed(entity_t* e);
 
 // Dummy state functions: does nothing;
-int dummy_state_update( state_t* s );
+int dummy_state_update( entity_t* e );
 int dummy_state_receive( state_t* s, message_t* m);
 
 int npc_create( entity_t* );
@@ -229,7 +238,8 @@ entid_t npc_at(const level_t* lvl, vec2_t pos, const emask_t* mask);
 // Find player at given position
 entid_t player_at(const level_t* lvl, vec2_t pos, const emask_t* mask);
 
-#define ENTID_ARRAY_LEN(buf) ((buf)[0])
+#define ENTID_ARRAY_LEN(buf)   ((buf)[0])
+#define ENTID_ARRAY_START      1
 entid_t* npc_at_area(const level_t* lvl, const area_t* area, const emask_t* mask, entid_t* arr);
 
 

@@ -5,7 +5,7 @@ LIBS = -lncursesw
 INCS = -I /usr/include/ncursesw
 
 HDRS = $(wildcard *.h)
-SRCS = main.c squaere.c entity.c movement.c common.c chunk.c
+SRCS = main.c squaere.c entity.c movement.c common.c chunk.c guard.c
 OBJS = $(SRCS:.c=.o)
 
 TARGET = main

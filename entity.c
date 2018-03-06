@@ -5,8 +5,12 @@
 entity_t* npcs[NPCS_NUM];
 entid_t npc_num = 0;
 
-int dummy_state_update( state_t* s ){
-    (void)s;
+entity_t* get_entity(entid_t id){
+    return npcs[id];
+}
+
+int dummy_state_update( entity_t* e ){
+    (void)e;
     return 0;
 }
 
@@ -16,6 +20,9 @@ int dummy_state_receive( state_t* s, message_t* m){
     return 0;
 }
 
+/*
+    Make a turn in this tick
+*/
 int entity_update(entity_t* e){
     int ret = 0;
 
@@ -48,6 +55,24 @@ int npc_create(entity_t* e){
     entity_place(e);
 
     return 0;
+}
+
+/*
+    Calculate speed for this turn
+*/
+pos_t get_speed(entity_t* e){
+
+    int base_speed = e->speed.base;
+    int chance     = e->speed.chance;
+
+    static unsigned int mask = BITMASK_LSB(
+        unsigned int, 
+        8*sizeof(e->speed.chance)
+    );
+
+    int threshold = rand() & mask;
+
+    return base_speed + ( (chance>threshold) ? 1 : 0);
 }
 
 /*
@@ -161,23 +186,21 @@ entid_t* npc_at_area(const level_t* lvl, const area_t* area, const emask_t* mask
                         for(uint32_t len=0; len<chunk_rect_width; ++len, ++chunk_idx){
 
                             entlist_t* el = &(cr->chunks[chunk_idx].entlist);
-                            el = el->next;
-
-                            while( NULL != el ){
+                            
+                            for( el = el->next; NULL != el; el = el->next ) {
                                 entid_t id = el->id;
                                 vec2_t pos = npcs[id]->pos;
                                 if( VEC2_INSIDE_RECT(pos, ul, lr) ){
-                                    arr[arr_idx++] = id;
+                                    arr[arr_idx] = id;
+                                    ++arr_idx;
                                     if( arr_idx == arr_len ){
                                         arr_len <<= 1;
                                         arr = realloc(arr, arr_len * sizeof(entid_t));
                                     }
                                 }
-                                el = el->next;
                             }
                         }
                     }
-
                         arr[0] = arr_idx-1;
                     return arr;
 

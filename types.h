@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdlib.h>
 
 // Useful Macroses
 
@@ -26,7 +27,7 @@ struct coordinates {
 #define VEC2(a,b) (vec2_t) { .y=(a), .x=(b) } 
 
 // 2D VECTOR OPERATIONS
-#define VEC2_MDIST(a,b)      ( ((a).x+(a).y) - ((b).x+(b).y) )
+#define VEC2_MDIST(a,b)      ( abs(((a).x-(b).x)) + abs((a).y-(b).y) )
 #define VEC2_SQDIST(a,b)  ( ((a).x-(b).x) * (((a).x-(b).x)) + (((a).y-(b).y) * ((a).y-(b).y))  )
 #define VEC2_CMP(a,b)   (! ( ((a).x - (b).y) | ((a).y - (b).y)) )
 #define VEC2_DOT(a,b)   ( (a).y*(b).y + (a).x*(b).x )  

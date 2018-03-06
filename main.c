@@ -158,22 +158,38 @@ int main(){
     chunk_init_levels(1, lvl);
 
 
-    int entities_num = 10;
-    entity_t* entities[entities_num];
+    entity_t* entities[20];
     int ent_count = 0;
     vec2_t startpos = VEC2(1,1);
 
     entity_t* e = NULL;
-    for( int i = 0; i<entities_num; ++i){
+    int squaere_num = 10;
+    for( int i = 0; i<squaere_num; ++i){
         vec2_t v = startpos;
         v = VEC2_SUM(v, VEC2(2*i,2*i));
 
-        e = ctor[ENT_SQUAERE](NULL, lvl, v);
+        e = ENTITY_CREATE(SQUAERE, NULL, lvl, v);
         e->movtype->target = v;
-        e->movtype->u.sq.radius = 4*(entities_num-i);
+        e->movtype->u.sq.radius = 4*(squaere_num-i);
         e->movtype->u.sq.direction = D_R;
         entities[ent_count++] = e;
     }
+
+    entity_t* guard = ENTITY_CREATE(GUARD, NULL, lvl, VEC2(30, 30));
+
+    area_t* guard_area = (area_t*) guard->state->data;
+    DEBUG_MPRINTF(0,0,"%p | %p\n", guard, guard_area);
+    *guard_area = (area_t){
+        .type = A_RECT,
+        .u.rect = {
+            .ul = { 25, 25 },
+            .lr = { 35, 35 }
+        }
+    };
+
+    entities[ent_count++] = guard;
+
+
 
     for( uint32_t i=0; i < lvl->size; ++i){
         tile_t t = lvl->area[i];
@@ -192,13 +208,13 @@ int main(){
         mvwaddch(map, p.y, p.x, glyphs[S_PLAYER]);
     }
 
-    area_t area = {
-        .type = A_RECT,
-        .u.rect = {
-            .ul = { .y=4, .x=4 },
-            .lr = { .y=20, .x=20 }
-        }
-    };
+    // area_t area = {
+    //     .type = A_RECT,
+    //     .u.rect = {
+    //         .ul = { .y=4, .x=4 },
+    //         .lr = { .y=20, .x=20 }
+    //     }
+    // };
 
     wrefresh(map);
     
@@ -218,7 +234,7 @@ int main(){
     for(;;){
 
         free(ent_arr);
-        ent_arr = npc_at_area(lvl, &area, NULL, NULL);
+        // ent_arr = npc_at_area(lvl, &area, NULL, NULL);
 
         //------------------------------------------------------------------------------
         //  DEBUG INFO
@@ -226,7 +242,7 @@ int main(){
 
         DEBUG_RESET();
 
-        for( int i = 0; i<entities_num; ++i)
+        for( int i = 0; i<ent_count; ++i)
         {
             vec2_t v = startpos;
             v = VEC2_SUM(v, VEC2(i,i));
@@ -237,18 +253,18 @@ int main(){
         }
         DEBUG_PRINT("\n");
 
-        DEBUG_PRINTF(
-            "Entities at rectangular {(%d;%d), (%d;%d)}\n",
-            area.u.rect.ul.y,
-            area.u.rect.ul.x,
-            area.u.rect.lr.y,
-            area.u.rect.lr.x
-            );
+        // DEBUG_PRINTF(
+        //     "Entities at rectangular {(%d;%d), (%d;%d)}\n",
+        //     area.u.rect.ul.y,
+        //     area.u.rect.ul.x,
+        //     area.u.rect.lr.y,
+        //     area.u.rect.lr.x
+        //     );
 
-        for( int i=1; i <= ENTID_ARRAY_LEN(ent_arr); ++i){
-            DEBUG_PRINTF("%d, ", ent_arr[i]);
-        }
-        DEBUG_PRINT("\n\n");
+        // for( int i=1; i <= ENTID_ARRAY_LEN(ent_arr); ++i){
+        //     DEBUG_PRINTF("%d, ", ent_arr[i]);
+        // }
+        // DEBUG_PRINT("\n\n");
 
         // wmove(DEBUG_WINDOW, 5,0);
         for( int i = 0; i<ent_count; ++i)
@@ -280,8 +296,8 @@ int main(){
             mvwaddch(map, e->pos.y, e->pos.x, glyphs[S_PLAYER]);
         }
 
-        mvwaddch( map, area.u.rect.ul.y, area.u.rect.ul.x, '#');
-        mvwaddch( map, area.u.rect.lr.y, area.u.rect.lr.x, '#');
+        // mvwaddch( map, area.u.rect.ul.y, area.u.rect.ul.x, '#');
+        // mvwaddch( map, area.u.rect.lr.y, area.u.rect.lr.x, '#');
 
         wrefresh(map);
 
