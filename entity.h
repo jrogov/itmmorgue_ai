@@ -229,4 +229,8 @@ entid_t npc_at(const level_t* lvl, vec2_t pos, const emask_t* mask);
 // Find player at given position
 entid_t player_at(const level_t* lvl, vec2_t pos, const emask_t* mask);
 
+#define ENTID_ARRAY_LEN(buf) ((buf)[0])
+entid_t* npc_at_area(const level_t* lvl, const area_t* area, const emask_t* mask, entid_t* arr);
+
+
 #endif /* _ENTITY_H_  */

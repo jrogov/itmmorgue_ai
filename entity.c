@@ -31,9 +31,17 @@ int entity_update(entity_t* e){
     return ret;
 }
 
+/*
+    Call this in the end of entity initialization
+*/
 int npc_create(entity_t* e){
 
-    e->entloc.id = npc_num;
+    e->entlist = (entlist_t){
+        .next = NULL,
+        .prev = NULL
+    };
+
+    e->EID = npc_num;
     npcs[npc_num] = e;
     ++npc_num;
 
@@ -91,6 +99,96 @@ entid_t entity_at(level_t* lvl, vec2_t pos, emask_t mask){
     (void) lvl;
     (void) pos;
     (void) mask;
+    return 0;
+}
+
+
+/*
+    Searches for NPCs at given area.
+    
+    lvl     : level we are searching
+    area    : description of area
+    mask    : return entity that satisfy some condition
+    buffer  : buffer to fill with Entity IDs
+              buffer[0] : length of array
+
+    entid_t* : [0]  - number of entities found
+               [1:] - array of Entity ID's located in this area
+
+    Returned value should be free()'d
+*/
+entid_t* npc_at_area(const level_t* lvl, const area_t* area, const emask_t* mask, entid_t* buffer ){
+
+    /* TODO check mask*/
+    (void) mask;
+
+    // TODO? redo this shit
+    entid_t* arr;
+    size_t arr_len;
+    size_t arr_idx;
+
+    arr_idx = 1;
+    if( NULL == buffer ){
+        arr_len = 16;
+        arr = malloc(arr_len * sizeof(entid_t));
+        if( NULL == arr )
+            panic("Error allocating entid_t[]!");
+    }
+    else {
+        arr_len = buffer[0];
+        arr = buffer;
+    }
+
+    const chunkroot_t* cr = &lvl->chunkroot;
+
+    switch( area->type ){
+        case A_RECT:
+                    do {} while(0);
+
+                    vec2_t ul = area->u.rect.ul;
+                    vec2_t lr = area->u.rect.lr;
+                    vec2_t ur = VEC2(ul.y, lr.x);
+                    vec2_t ll = VEC2(lr.y, ul.x);
+
+                    uint32_t chunk_vert_inc = cr->u.calc.x_cnum;
+                    uint32_t chunk_fline_start = chunk_index(cr, ul);
+                    uint32_t chunk_rect_width = chunk_index(cr, ur) - chunk_fline_start + 1;
+                    uint32_t chunk_vert_bound = chunk_index(cr, ll) + chunk_vert_inc;
+
+                    for(uint32_t s=chunk_fline_start; s< chunk_vert_bound; s+=chunk_vert_inc){
+
+                        uint32_t chunk_idx = s;
+                        for(uint32_t len=0; len<chunk_rect_width; ++len, ++chunk_idx){
+
+                            entlist_t* el = &(cr->chunks[chunk_idx].entlist);
+                            el = el->next;
+
+                            while( NULL != el ){
+                                entid_t id = el->id;
+                                vec2_t pos = npcs[id]->pos;
+                                if( VEC2_INSIDE_RECT(pos, ul, lr) ){
+                                    arr[arr_idx++] = id;
+                                    if( arr_idx == arr_len ){
+                                        arr_len <<= 1;
+                                        arr = realloc(arr, arr_len * sizeof(entid_t));
+                                    }
+                                }
+                                el = el->next;
+                            }
+                        }
+                    }
+
+                        arr[0] = arr_idx-1;
+                    return arr;
+
+                    break;
+
+        // case A_MCIRCLE:
+        // case A_CIRCLE:
+    }
+
+
+
     return 0;
 }
 
