@@ -8,8 +8,12 @@
 //     return 0;
 // }
 
-int squaere_state_update( entity_t* e ){
+#define ENT squaere
 
+// int squaere_state_update( entity_t* e )
+
+STATE_DEF(WALK)
+{
     e->movtype->mov(e);
     // (void) e;
     return 0;
@@ -54,7 +58,7 @@ entity_t* squaere_create( entity_t* ent, level_t* lvl, vec2_t pos ){
 
     state_t state = {
         .receive  = dummy_state_receive,
-        .update   = squaere_state_update,
+        .update   = STATE(WALK),
     };
 
     movtype_t movtype = {
@@ -70,3 +74,5 @@ entity_t* squaere_create( entity_t* ent, level_t* lvl, vec2_t pos ){
 
     return e;
 }
+
+#undef ENT
