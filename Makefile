@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = --std=gnu99 -pedantic -Wall -Wextra -Werror -ggdb3 -DDEBUG
+CFLAGS = --std=gnu99 -pedantic -Wall -Wextra -Werror -ggdb3 
+DEBUGFLAGS = -DDEBUG
 LIBS = -lncursesw
 INCS = -I /usr/include/ncursesw
 
@@ -12,10 +13,10 @@ TARGET = main
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $^ $(CFLAGS) $(LIBS) $(INCS) -o $@
+	$(CC) $^ $(CFLAGS) $(DEBUGFLAGS) $(LIBS) $(INCS) -o $@
 
 %.o: %.c $(HDRS)
-	$(CC) -c $< $(CFLAGS) $(LIBS) $(INCS) -o $@
+	$(CC) -c $< $(CFLAGS) $(DEBUGFLAGS) $(LIBS) $(INCS) -o $@
 
 clean:
 	$(RM) $(OBJS) $(TARGET)
