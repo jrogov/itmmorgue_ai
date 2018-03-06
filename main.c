@@ -192,6 +192,14 @@ int main(){
         mvwaddch(map, p.y, p.x, glyphs[S_PLAYER]);
     }
 
+    area_t area = {
+        .type = A_RECT,
+        .u.rect = {
+            .ul = { .y=4, .x=4 },
+            .lr = { .y=20, .x=20 }
+        }
+    };
+
     wrefresh(map);
     
     DEBUG_MPRINTF(2,0,
@@ -205,7 +213,12 @@ int main(){
     DEBUG_PRINT("\n  Y   X | EntID\n");
     DEBUG_FIXPOS();
 
+    entid_t* ent_arr = NULL;
+
     for(;;){
+
+        free(ent_arr);
+        ent_arr = npc_at_area(lvl, &area, NULL, NULL);
 
         //------------------------------------------------------------------------------
         //  DEBUG INFO
@@ -223,6 +236,19 @@ int main(){
                 );
         }
         DEBUG_PRINT("\n");
+
+        DEBUG_PRINTF(
+            "Entities at rectangular {(%d;%d), (%d;%d)}\n",
+            area.u.rect.ul.y,
+            area.u.rect.ul.x,
+            area.u.rect.lr.y,
+            area.u.rect.lr.x
+            );
+
+        for( int i=1; i <= ENTID_ARRAY_LEN(ent_arr); ++i){
+            DEBUG_PRINTF("%d, ", ent_arr[i]);
+        }
+        DEBUG_PRINT("\n\n");
 
         // wmove(DEBUG_WINDOW, 5,0);
         for( int i = 0; i<ent_count; ++i)
@@ -253,6 +279,9 @@ int main(){
             entity_update(e);
             mvwaddch(map, e->pos.y, e->pos.x, glyphs[S_PLAYER]);
         }
+
+        mvwaddch( map, area.u.rect.ul.y, area.u.rect.ul.x, '#');
+        mvwaddch( map, area.u.rect.lr.y, area.u.rect.lr.x, '#');
 
         wrefresh(map);
 
