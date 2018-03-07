@@ -5,7 +5,7 @@
 #include "guard.h"
 
 
-enum ENTITY_ID {
+enum ENTITY_TYPE {
     ENT_DUMMY = 0,
     ENT_SQUAERE,
     ENT_GUARD 

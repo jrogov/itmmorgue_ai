@@ -18,42 +18,42 @@
 #define ENTITY_CTOR(a) (a)      // Function for creating entity
                                 // entity_t* ctor( void* (* malloc_f )(size_t) 
 
-// TODO switch state macro
-#define SWITCH(e,name) e->state = 
+// TODO switch routine macro
+#define SWITCH(e,name) e->routine = 
 
-#define GLOBAL_STATE    ENTNAME##_global_state
-#define STATE(name)     ENTNAME##name##_state_update
+#define GLOBAL_ROUTINE    ENTNAME##_global_routine
+#define ROUTINE(name)     ENTNAME##name##_routine_update
 
-#define GLOBAL_STATE_DEF    int GLOBAL_STATE( entity_t* e )
-#define STATE_DEF(name)     int STATE(name)( entity_t* e )
+#define GLOBAL_ROUTINE_DEF    int GLOBAL_ROUTINE( entity_t* e )
+#define ROUTINE_DEF(name)     int ROUTINE(name)( entity_t* e )
 
 
 #define MAX_WEIGHT UINT16_MAX
 
 /*
     AI 
-        Any entity consists of one or more states:
-        - global state (opt.) - describes behaviour and states change
-        - current state - describes current "task" of entity
-        - previous states (opt.) - prev. states with priorities 
+        Any entity consists of one or more routines:
+        - global routine (opt.) - describes behaviour and routines change
+        - current routine - describes current "task" of entity
+        - previous routines (opt.) - prev. routines with priorities 
 
     State
         Simple FSM that describes entity behaviour
         State may change only on the end of turn
 
     Weights
-        If state changes, it changes to state with maximum weight
-        Weight is being caluclated with each state_t.receive call,
+        If routine changes, it changes to routine with maximum weight
+        Weight is being caluclated with each routine_t.receive call,
         i.e. each message either affects 1 or more weights, or it is ignored
 
-    (TODO?: Low-health is checked inside state_t.update OR received as message )
-    (TODO?: state-change only if weight exceeds threshold )
+    (TODO?: Low-health is checked inside routine_t.update OR received as message )
+    (TODO?: routine-change only if weight exceeds threshold )
 */
 
 // Entity Related Types
 
 typedef struct entity entity_t;
-typedef struct state state_t;
+typedef struct routine routine_t;
 typedef struct movtype movtype_t;
 
 // ent_ctor_t - constructor for some entity
@@ -69,21 +69,21 @@ typedef struct emask_predicate emask_predicate_t;
 typedef struct emask emask_t;
 
 
-// state_t
-struct state {
+// routine_t
+struct routine {
 
-    int s;                                  // Current substate in FSM: defined in entity module
+    int s;                                  // Current subroutine in FSM: defined in entity module
 
-    int (* receive )(state_t*, message_t*); // Receives messages and updates state weights
+    int (* receive )(routine_t*, message_t*); // Receives messages and updates routine weights
                                             // NULL for simple mobs
 
     int (* update )(entity_t*);             // State logic
 
-    void* data;                             // Extra data for states (i.e. buffer)
-                                            // TODO? Managed by state itself 
+    void* data;                             // Extra data for routines (i.e. buffer)
+                                            // TODO? Managed by routine itself 
 
-    // int state_num;
-    // uint16_t weights[/*state_num*/];
+    // int routine_num;
+    // uint16_t weights[/*routine_num*/];
 };
 
 
@@ -130,19 +130,16 @@ struct entity {
     // TODO: Increase size?
     uint16_t traits;
 
-    struct {
-        uint8_t base;
-        uint8_t chance;           // 
-    } speed;
+    // uint16_t clan;
 
-    state_t* gstate;               // Global state - defines state management and basic behaviour
-    state_t* state;                // Current state - defines current task (patrol, pursue, attack, etc.)
+    routine_t* groutine;               // Global routine - defines routine management and basic behaviour
+    routine_t* routine;                // Current routine - defines current task (patrol, pursue, attack, etc.)
 
-    // pqueue<state_t> prev_states // Previous states - states entity may return to.
-                                   // Each state has it's own (dynamic) priority
+    // pqueue<routine_t> prev_routines // Previous routines - routines entity may return to.
+                                   // Each routine has it's own (dynamic) priority
                                    // State with max priority is restored as current
                                    // Common 
-                                   // Capacity depends from entity params (e.g. state_mem_capacity (TODO) )
+                                   // Capacity depends from entity params (e.g. routine_mem_capacity (TODO) )
 
 
     movtype_t* movtype;
@@ -158,6 +155,12 @@ struct entity {
 struct movtype {
 
     vec2_t target;
+
+    struct {
+        uint8_t base;
+        uint8_t chance;           // 
+    } speed;
+
 
     union {
         struct {
@@ -213,10 +216,6 @@ enum update_code {
 // "Getters" that has complex calculation
 entity_t* get_entity(entid_t id);
 pos_t get_speed(entity_t* e);
-
-// Dummy state functions: does nothing;
-int dummy_state_update( entity_t* e );
-int dummy_state_receive( state_t* s, message_t* m);
 
 int npc_create( entity_t* );
 int entity_update( entity_t* );

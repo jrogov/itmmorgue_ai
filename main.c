@@ -177,7 +177,7 @@ int main(){
 
     entity_t* guard = ENTITY_CREATE(GUARD, NULL, lvl, VEC2(30, 30));
 
-    area_t* guard_area = (area_t*) guard->state->data;
+    area_t* guard_area = (area_t*) guard->routine->data;
     DEBUG_MPRINTF(0,0,"%p | %p\n", guard, guard_area);
     *guard_area = (area_t){
         .type = A_RECT,

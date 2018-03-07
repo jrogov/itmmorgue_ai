@@ -9,28 +9,17 @@ entity_t* get_entity(entid_t id){
     return npcs[id];
 }
 
-int dummy_state_update( entity_t* e ){
-    (void)e;
-    return 0;
-}
-
-int dummy_state_receive( state_t* s, message_t* m){
-    (void)s;
-    (void)m;
-    return 0;
-}
-
 /*
     Make a turn in this tick
 */
 int entity_update(entity_t* e){
     int ret = 0;
 
-    if( NULL != e->gstate )
-        ret |= e->gstate->update(e);
+    if( NULL != e->groutine )
+        ret |= e->groutine->update(e);
 
-    if( NULL != e->state )
-        ret |= e->state->update(e);
+    if( NULL != e->routine )
+        ret |= e->routine->update(e);
 
     // if( ret & C_ENT_MOVED )
 
@@ -62,12 +51,13 @@ int npc_create(entity_t* e){
 */
 pos_t get_speed(entity_t* e){
 
-    int base_speed = e->speed.base;
-    int chance     = e->speed.chance;
+    movtype_t* m    = e->movtype; 
+    int base_speed = m->speed.base;
+    int chance     = m->speed.chance;
 
     static unsigned int mask = BITMASK_LSB(
         unsigned int, 
-        8*sizeof(e->speed.chance)
+        8*sizeof(m->speed.chance)
     );
 
     int threshold = rand() & mask;
